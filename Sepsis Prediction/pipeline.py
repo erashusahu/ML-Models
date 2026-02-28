@@ -24,12 +24,13 @@ class SepsisPredictionPipeline:
         self.preprocessor = ICUPreprocessor(
             vital_cols=['hr', 'sbp', 'dbp', 'map', 'o2sat', 'temp', 'resp_rate'],
             lab_cols=['lactate', 'wbc', 'creatinine', 'bilirubin', 'platelets'],
+            static_cols=['age', 'weight'],
             use_decay=True # Primary GRU-D style approach
         )
         
         # 3. Features
         self.feat_engineer = ICUFeatureEngineer(
-            continuous_cols=['hr', 'sbp', 'map', 'temp', 'lactate', 'resp_rate']
+            continuous_cols=['hr', 'sbp', 'map', 'temp', 'lactate', 'resp_rate', 'age', 'weight']
         )
         
         # 4. Modeling & Calibration
@@ -115,7 +116,9 @@ if __name__ == "__main__":
         'timestamp': [datetime.datetime.now(), datetime.datetime.now(), datetime.datetime.now()],
         'hr': [88, 125, 75], # P_02 has tachycardia (High Risk proxy)
         'sbp': [120, 85, 110], # P_02 is hypotensive
-        'lactate': [1.2, 4.5, 0.8] # P_02 shows severe shock indicators
+        'lactate': [1.2, 4.5, 0.8], # P_02 shows severe shock indicators
+        'age': [45.0, 72.0, 30.0],
+        'weight': [70.5, 85.0, 62.0]
     })
     
     pipeline = SepsisPredictionPipeline()

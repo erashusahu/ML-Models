@@ -13,6 +13,8 @@ class ICUVitalSign(BaseModel):
     o2sat: Optional[float] = Field(None, description="Oxygen Saturation (%)")
     temp: Optional[float] = Field(None, description="Temperature (C)")
     resp_rate: Optional[float] = Field(None, description="Respiratory Rate (breaths/min)")
+    age: Optional[float] = Field(None, description="Patient Age (years)")
+    weight: Optional[float] = Field(None, description="Patient Weight (kg)")
 
 class ICULabResult(BaseModel):
     """Schema for incoming laboratory results."""

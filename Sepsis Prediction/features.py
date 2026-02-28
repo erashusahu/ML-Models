@@ -62,8 +62,9 @@ class ICUFeatureEngineer:
     """
     Dual-Stream Feature Engineering logic: Primary (Z-score) and Backup (Categorical).
     """
-    def __init__(self, continuous_cols: list):
+    def __init__(self, continuous_cols: list, rolling_cols: list = None):
         self.continuous_cols = continuous_cols
+        self.rolling_cols = rolling_cols if rolling_cols is not None else continuous_cols
         self.scaler_means = {}
         self.scaler_stds = {}
         
@@ -85,7 +86,7 @@ class ICUFeatureEngineer:
         df_feats = calculate_lactate_trend(df_feats)
         
         # 2. Rolling & Temporal
-        df_feats = add_rolling_features(df_feats, columns=self.continuous_cols)
+        df_feats = add_rolling_features(df_feats, columns=self.rolling_cols)
         
         # 3. Categorical/Clinical ranges (Backup Stream)
         df_feats = create_clinical_ranges(df_feats)

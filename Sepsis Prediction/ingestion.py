@@ -2,21 +2,38 @@ import pandas as pd
 import numpy as np
 from typing import Tuple
 
-def patient_level_split(df: pd.DataFrame, test_size: float = 0.2, random_state: int = 42) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def patient_level_split(df: pd.DataFrame, test_size: float = 0.2, random_state: int = 42, stratify_col: str = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     """
     Splits the dataset at the patient level to prevent "identity leakage".
     All rows for a single patient will go entirely to either Train or Test.
+    Optionally stratifies based on a target column (e.g., if any of the patient's
+    rows contain a positive label).
     """
     if 'patient_id' not in df.columns:
         raise ValueError("DataFrame must contain a 'patient_id' column.")
     
     unique_patients = df['patient_id'].unique()
-    np.random.seed(random_state)
-    np.random.shuffle(unique_patients)
     
-    split_idx = int(len(unique_patients) * (1 - test_size))
-    train_patients = unique_patients[:split_idx]
-    test_patients = unique_patients[split_idx:]
+    if stratify_col and stratify_col in df.columns:
+        from sklearn.model_selection import train_test_split
+        # Get max label per patient (if any row is 1, patient is 1)
+        patient_labels = df.groupby('patient_id')[stratify_col].max()
+        
+        train_patients, test_patients = train_test_split(
+            patient_labels.index, 
+            test_size=test_size, 
+            random_state=random_state, 
+            stratify=patient_labels.values
+        )
+    else:
+        np.random.seed(random_state)
+        # Using a copy prevents the Deprecation Warning about shuffling unique() output
+        unique_patients_list = list(unique_patients)
+        np.random.shuffle(unique_patients_list)
+        
+        split_idx = int(len(unique_patients_list) * (1 - test_size))
+        train_patients = unique_patients_list[:split_idx]
+        test_patients = unique_patients_list[split_idx:]
     
     train_df = df[df['patient_id'].isin(train_patients)].copy()
     test_df = df[df['patient_id'].isin(test_patients)].copy()

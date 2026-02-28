@@ -102,9 +102,10 @@ class ICUPreprocessor:
     """
     Robust Preprocessing Layer handling multi-strategy imputation and temporal logic.
     """
-    def __init__(self, vital_cols: list, lab_cols: list, use_decay: bool = False):
+    def __init__(self, vital_cols: list, lab_cols: list, static_cols: list = None, use_decay: bool = False):
         self.vital_cols = vital_cols
         self.lab_cols = lab_cols
+        self.static_cols = static_cols or []
         self.use_decay = use_decay
         self.all_cols = self.vital_cols + self.lab_cols
         
@@ -133,5 +134,8 @@ class ICUPreprocessor:
         else:
             # Backup method: Forward fill
             df_processed = forward_fill_impute(df_processed, self.all_cols)
+            
+        if self.static_cols:
+            df_processed = forward_fill_impute(df_processed, self.static_cols)
             
         return df_processed
